@@ -17,7 +17,24 @@ form div label {
     width: 75px;
 }
 </style>
-<script src="fileupload.js" type="text/javascript" charset="utf-8"></script>
+<script src="elm.js" type="text/javascript" charset="utf-8"></script>
+<script>
+// https://developer.mozilla.org/en-US/docs/Web/API/FormData/Using_FormData_Objects
+/*
+setTimeout(() => {
+    document.getElementsByTagName('form')[0].addEventListener('submit', e => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('banner', document.getElementById('banner').files[0]);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:8080/nmg/image/team/101');
+        xhr.send(formData);
+    });
+}, 1000);
+*/
+</script>
 </head>
 
 <body>
