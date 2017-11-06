@@ -6,7 +6,7 @@ import Html.Events exposing (on, onSubmit)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
-import FileUpload exposing (FileData, fileSelected, fileContentRead)
+import Ports exposing (FileData, fileSelected, fileContentRead)
 
 
 type Msg

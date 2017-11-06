@@ -1,4 +1,4 @@
-port module FileUpload exposing (..)
+port module Ports exposing (..)
 
 type alias FileData =
     { contents : String
