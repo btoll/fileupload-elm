@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (action, enctype, for, id, title, type_, value)
+import Html.Attributes exposing (for, id, multiple, type_, value)
 import Html.Events exposing (on, onSubmit)
 import Http
 import Json.Decode as Decode
@@ -108,7 +108,7 @@ view model =
     [ onSubmit ( SubmitFile "http://localhost:8080/nmg/image/team/5" ) ]
     ( List.concat [
         [ div [] [ select [] ( List.map optionsList [ "-- Choose Sport --", "Baseball", "Basketball", "Golf", "Soccer", "Tennis" ] ) ] ]
-        , ( List.map fileUploadField [ "Banner", "Logo", "Icon" ] )
+        , [ fileUploadField "Team Images" ]
         , [ div [] [ input [ type_ "submit" ] [ text "Upload" ] ] ]
     ] )
 
@@ -117,7 +117,7 @@ fileUploadField name =
     div []
     [
         label [ for name ] [ text name ]
-        , input [ type_ "file" , id name , on "change" ( Decode.succeed FileSelected ) ] []
+        , input [ multiple True, type_ "file" , id name , on "change" ( Decode.succeed FileSelected ) ] []
     ]
 
 optionsList : String -> Html Msg
