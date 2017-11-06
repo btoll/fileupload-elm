@@ -6,5 +6,5 @@ type alias FileData =
     }
 
 port fileSelected : String -> Cmd msg
-port fileContentRead : (FileData -> msg) -> Sub msg
+port fileContentRead : ( List FileData -> msg) -> Sub msg
 

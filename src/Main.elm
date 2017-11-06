@@ -11,7 +11,7 @@ import FileUpload exposing (FileData, fileSelected, fileContentRead)
 
 type Msg
     = FileSelected
-    | FileRead FileData
+    | FileRead ( List FileData )
     | SubmitFile String
     | PostFile ( Result Http.Error String )
 
@@ -22,7 +22,7 @@ type alias File =
 
 type alias Model =
     { id : String
-    , file : Maybe File
+    , files : List File
     }
 
 -- https://github.com/rtfeldman/elm-spa-example/blob/master/src/Util.elm#L8
@@ -46,8 +46,8 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { id = "Banner"
-      , file = Nothing
+    ( { id = "fuploads"
+      , files = []
       }
     , Cmd.none
     )
@@ -59,16 +59,10 @@ update msg model =
             ( model, fileSelected model.id )
 
         FileRead data ->
-            let
-                newFile =
-                    { contents = data.contents
-                    , filename = data.filename
-                    }
-            in
-                ( { model | file = Just newFile } , Cmd.none )
+              ( { model | files = data }, Cmd.none )
 
         SubmitFile url ->
-            ( model, makeRequest url model.file )
+            ( model, makeRequest url model.files )
 
         -- TODO
         PostFile ( Ok _ ) ->
@@ -78,20 +72,19 @@ update msg model =
         PostFile ( Err _ ) ->
             ( model, Cmd.none )
 
-makeRequest : String -> Maybe File -> Cmd Msg
-makeRequest url file =
+makeRequest : String -> List File -> Cmd Msg
+makeRequest url objectfiles =
     let
-        objectfile =
-            Maybe.withDefault { contents = "", filename = "" } file
-
         json =
-            Encode.object
-                [ "filename" => Encode.string objectfile.filename
-                , "contents" => Encode.string objectfile.contents
-                ]
+            List.map ( \file ->
+                Encode.object
+                   [ "filename" => Encode.string file.filename
+                    , "contents" => Encode.string file.contents
+                    ] )
+            objectfiles
 
         body =
-            Encode.list [ json ]
+            Encode.list json
                 |> Http.jsonBody
 
         request =
@@ -104,20 +97,19 @@ makeRequest url file =
 view : Model -> Html Msg
 view model =
     form
---    [ action "http://localhost:8080/nmg/image/team/5", onSubmit SubmitFile ]
     [ onSubmit ( SubmitFile "http://localhost:8080/nmg/image/team/5" ) ]
     ( List.concat [
         [ div [] [ select [] ( List.map optionsList [ "-- Choose Sport --", "Baseball", "Basketball", "Golf", "Soccer", "Tennis" ] ) ] ]
-        , [ fileUploadField "Team Images" ]
+        , [ fileUploadField ]
         , [ div [] [ input [ type_ "submit" ] [ text "Upload" ] ] ]
     ] )
 
-fileUploadField : String -> Html Msg
-fileUploadField name =
+fileUploadField : Html Msg
+fileUploadField =
     div []
     [
-        label [ for name ] [ text name ]
-        , input [ multiple True, type_ "file" , id name , on "change" ( Decode.succeed FileSelected ) ] []
+        label [ for "fuploads" ] [ text "Team Uploads" ]
+        , input [ multiple True, type_ "file" , id "fuploads" , on "change" ( Decode.succeed FileSelected ) ] []
     ]
 
 optionsList : String -> Html Msg
@@ -125,6 +117,6 @@ optionsList name =
     option [ value name ] [ text name ]
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions data =
     fileContentRead FileRead
 
