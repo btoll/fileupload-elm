@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (for, id, multiple, type_, value)
-import Html.Events exposing (on, onSubmit)
+import Html.Events exposing (on, onInput, onSubmit)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -12,6 +12,8 @@ import Ports exposing (FileData, fileSelected, fileContentRead)
 type Msg
     = FileSelected
     | FileRead ( List FileData )
+    | SelectEntity String
+    | SelectEntityId String
     | SubmitFile String
     | PostFile ( Result Http.Error String )
 
@@ -22,6 +24,8 @@ type alias File =
 
 type alias Model =
     { id : String
+    , entity : String
+    , entityId : String
     , files : List File
     }
 
@@ -47,6 +51,8 @@ main =
 init : ( Model, Cmd Msg )
 init =
     ( { id = "fuploads"
+      , entity = ""
+      , entityId = ""
       , files = []
       }
     , Cmd.none
@@ -61,9 +67,6 @@ update msg model =
         FileRead data ->
               ( { model | files = data }, Cmd.none )
 
-        SubmitFile url ->
-            ( model, makeRequest url model.files )
-
         -- TODO
         PostFile ( Ok _ ) ->
             ( model, Cmd.none )
@@ -72,9 +75,21 @@ update msg model =
         PostFile ( Err _ ) ->
             ( model, Cmd.none )
 
-makeRequest : String -> List File -> Cmd Msg
-makeRequest url objectfiles =
+        SelectEntity entity ->
+            ( { model | entity = entity }, Cmd.none )
+
+        SelectEntityId id ->
+            ( { model | entityId = id }, Cmd.none )
+
+        SubmitFile url ->
+            ( model, makeRequest model url model.files )
+
+makeRequest : Model -> String -> List File -> Cmd Msg
+makeRequest model url objectfiles =
     let
+        endpoint =
+            url ++ "/" ++ model.entity ++ "/" ++ model.entityId
+
         json =
             List.map ( \file ->
                 Encode.object
@@ -88,7 +103,7 @@ makeRequest url objectfiles =
                 |> Http.jsonBody
 
         request =
-            Http.post url body Decode.string
+            Http.post endpoint body Decode.string
 
 
     in
@@ -97,9 +112,10 @@ makeRequest url objectfiles =
 view : Model -> Html Msg
 view model =
     form
-    [ onSubmit ( SubmitFile "http://localhost:8080/nmg/image/team/5" ) ]
+    [ onSubmit ( SubmitFile "http://localhost:8080/nmg/image" ) ]
     ( List.concat [
-        [ div [] [ select [] ( List.map optionsList [ "-- Choose Sport --", "Baseball", "Basketball", "Golf", "Soccer", "Tennis" ] ) ] ]
+        [ div [] [ select [ onInput SelectEntity ] ( List.map optionsList [ "-- Choose Entity --", "event", "sport", "team" ] ) ] ]
+        , [ div [] [ select [ onInput SelectEntityId ] ( List.map optionsList [ "-- Choose ID --", "1", "2", "3", "4", "5" ] ) ] ]
         , [ fileUploadField ]
         , [ div [] [ input [ type_ "submit" ] [ text "Upload" ] ] ]
     ] )
@@ -108,7 +124,7 @@ fileUploadField : Html Msg
 fileUploadField =
     div []
     [
-        label [ for "fuploads" ] [ text "Team Uploads" ]
+        label [ for "fuploads" ] [ text "Choose Entity Uploads" ]
         , input [ multiple True, type_ "file" , id "fuploads" , on "change" ( Decode.succeed FileSelected ) ] []
     ]
 
