@@ -115,7 +115,7 @@ view model =
     [ onSubmit ( SubmitFile "http://localhost:8080/nmg/image" ) ]
     ( List.concat [
         [ div [] [ select [ onInput SelectEntity ] ( List.map optionsList [ "-- Choose Entity --", "event", "sport", "team" ] ) ] ]
-        , [ div [] [ select [ onInput SelectEntityId ] ( List.map optionsList [ "-- Choose ID --", "1", "2", "3", "4", "5" ] ) ] ]
+        , [ div [] [ select [ onInput SelectEntityId ] ( List.map optionsList ( "-- Choose ID --" :: List.map toString ( List.range 1 20 ) ) ) ] ]
         , [ fileUploadField ]
         , [ div [] [ input [ type_ "submit" ] [ text "Upload" ] ] ]
     ] )
